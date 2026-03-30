@@ -9,51 +9,64 @@ import SwiftUI
 
 struct RecipeListView: View {
   let recipes = Recipe.samples
+  @Binding var selectedRecipe: Recipe?
+  let namespace: Namespace.ID
   
   var body: some View {
     NavigationStack {
-      List(recipes) { recipe in
-        NavigationLink(value: recipe) {
-          RecipeRow(recipe: recipe)
+      ScrollView {
+        LazyVStack(spacing: 20) {
+          ForEach(recipes) { recipe in
+            if selectedRecipe?.id != recipe.id {
+              RecipeHeroCard(recipe: recipe, namespace: namespace)
+                .onTapGesture {
+                  withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
+                    selectedRecipe = recipe
+                  }
+                }
+            }
+          }
         }
+        .padding()
       }
       .navigationTitle("Recipes")
-      .navigationDestination(for: Recipe.self) { recipe in
-        RecipeView(recipe: recipe)
-      }
     }
   }
 }
 
-private struct RecipeRow: View {
+struct RecipeHeroCard: View {
   let recipe: Recipe
+  let namespace: Namespace.ID
   
   var body: some View {
-    HStack(spacing: 16) {
-      Image(systemName: recipe.imageName)
-        .font(.title2)
-        .frame(width: 44, height: 44)
-        .background(.ultraThinMaterial)
-        .glassEffect(.regular.tint(.blue.opacity(0.2)))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+    ZStack(alignment: .bottomLeading) {
+      RoundedRectangle(cornerRadius: 24)
+        .fill(.ultraThinMaterial)
+        .matchedGeometryEffect(id: "card-\(recipe.id)", in: namespace)
+        .frame(height: 280)
+        .overlay(alignment: .center) {
+          Image(systemName: recipe.imageName)
+            .font(.system(size: 80))
+            .matchedGeometryEffect(id: "icon-\(recipe.id)", in: namespace)
+            .foregroundStyle(.secondary)
+          
+        }
       
       VStack(alignment: .leading, spacing: 4) {
         Text(recipe.title)
-          .font(.headline)
+          .font(.title2.bold())
+          .matchedGeometryEffect(id: "title-\(recipe.id)", in: namespace)
         Text(recipe.subtitle)
           .font(.subheadline)
           .foregroundStyle(.secondary)
+          .matchedGeometryEffect(id: "subtitle-\(recipe.id)", in: namespace)
       }
-      
-      Spacer()
-      
-      Text("\(recipe.cookTime) min")
-        .font(.caption)
-        .foregroundStyle(.secondary)
+      .padding(20)
     }
+    .glassEffect(.regular)
   }
 }
 
 #Preview {
-  RecipeListView()
+  RecipeListView(selectedRecipe: .constant(nil), namespace: Namespace().wrappedValue)
 }
