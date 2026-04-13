@@ -7,43 +7,79 @@
 
 import Foundation
 
+enum IngredientUnit: CaseIterable, Hashable, CustomStringConvertible, Identifiable {
+  case none
+  case slices
+  case tablespoon
+  case teaspoon
+  case pinch
+  case cup
+  case ounce
+  case pound
+  case head
+  case clove
+  case sprig
+  
+  var id: String { description }
+
+  var description: String {
+    switch self {
+    case .none:       ""
+    case .slices:     "slices"
+    case .tablespoon: "tbsp"
+    case .teaspoon:   "tsp"
+    case .pinch:      "pinch"
+    case .cup:        "cup"
+    case .ounce:      "oz"
+    case .pound:      "lbs"
+    case .head:       "heads"
+    case .clove:      "cloves"
+    case .sprig:      "sprigs"
+    }
+  }
+}
+
 struct Ingredient: Identifiable, Hashable {
   let id = UUID()
-  let name: String
-  let icon: String
-  let unit: String
-  let quantity: String
+  var name: String
+  var icon: String
+  var unit: String
+  var quantity: String
+}
+
+extension Ingredient {
+  static var empty: Ingredient {
+    Ingredient(name: "", icon: "", unit: "", quantity: "0")
+  }
 }
 
 struct Component: Identifiable, Hashable {
   let id = UUID()
-  let title: String?
-  let ingredients: [Ingredient]
+  var title: String?
+  var ingredients: [Ingredient]
 }
 
 struct Step: Identifiable, Hashable {
   let id = UUID()
-  let text: String
-  let ingredients: [Ingredient]
+  var text: String
+  var ingredients: [Ingredient]
 }
 
 struct Recipe: Identifiable, Hashable {
   let id = UUID()
-  let title: String
-  let subtitle: String
-  let imageName: String
-  let cookTime: Int
-  let servings: Int
-  let category: RecipeCategory
-  let components: [Component]
-  let steps: [Step]
+  var title: String
+  var subtitle: String
+  var imageName: String
+  var cookTime: Int
+  var servings: Int
+  var components: [Component]
+  var steps: [Step]
 }
 
-enum RecipeCategory: String, CaseIterable {
-  case breakfast
-  case lunch
-  case dinner
-  case dessert
+extension Recipe {
+  static var empty: Recipe {
+    Recipe(title: "", subtitle: "", imageName: "", cookTime: 0, servings: 0, components: [], steps: [])
+  }
 }
 
 extension Recipe {
@@ -61,7 +97,6 @@ extension Recipe {
           imageName: "fork.knife",
           cookTime: 10,
           servings: 1,
-          category: .breakfast,
           components: [
             Component(title: nil, ingredients: [avocado, sourdough, oliveOil, salt, redPepperFlakes])
           ],
@@ -85,7 +120,6 @@ extension Recipe {
           imageName: "leaf",
           cookTime: 20,
           servings: 2,
-          category: .lunch,
           components: [
             Component(title: "Salad", ingredients: [romaine, chicken, parmesan, croutons]),
             Component(title: "Dressing", ingredients: [caesarDressing])
@@ -110,7 +144,6 @@ extension Recipe {
           imageName: "flame",
           cookTime: 25,
           servings: 4,
-          category: .dinner,
           components: [
             Component(title: "Pasta", ingredients: [spaghetti]),
             Component(title: "Sauce", ingredients: [pancetta, eggs, pecorino, blackPepper])
@@ -136,7 +169,6 @@ extension Recipe {
           imageName: "birthday.cake",
           cookTime: 30,
           servings: 2,
-          category: .dessert,
           components: [
             Component(title: nil, ingredients: [darkChocolate, butter, eggs, sugar, flour])
           ],
@@ -149,7 +181,7 @@ extension Recipe {
         )
       }(),
       {
-        let mixedBerries = Ingredient(name: "Mixed berries", icon: "leaf.fill", unit: "cups", quantity: "2")
+        let mixedBerries = Ingredient(name: "Mixed berries", icon: "leaf.fill", unit: "cup", quantity: "2")
         let acaiPacket = Ingredient(name: "Acai packet", icon: "bag.fill", unit: "", quantity: "1")
         let banana = Ingredient(name: "Banana", icon: "moon.fill", unit: "", quantity: "1")
         let granola = Ingredient(name: "Granola", icon: "cup.and.saucer.fill", unit: "cup", quantity: "1/2")
@@ -160,7 +192,6 @@ extension Recipe {
           imageName: "cup.and.saucer",
           cookTime: 5,
           servings: 1,
-          category: .breakfast,
           components: [
             Component(title: "Base", ingredients: [mixedBerries, acaiPacket, banana]),
             Component(title: "Toppings", ingredients: [granola, honey])
@@ -183,7 +214,6 @@ extension Recipe {
           imageName: "fish",
           cookTime: 18,
           servings: 2,
-          category: .dinner,
           components: [
             Component(title: nil, ingredients: [salmon, lemon, butter, garlic, dill])
           ],

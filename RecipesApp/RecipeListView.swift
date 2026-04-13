@@ -11,7 +11,8 @@ struct RecipeListView: View {
   let recipes = Recipe.samples
   @Binding var selectedRecipe: Recipe?
   let namespace: Namespace.ID
-  
+  @State private var navigationRecipe: Recipe?
+
   var body: some View {
     NavigationStack {
       ScrollView {
@@ -30,6 +31,18 @@ struct RecipeListView: View {
         .padding()
       }
       .navigationTitle("Recipes")
+      .sheet(item: $navigationRecipe) { recipe in
+        RecipeView(recipe: recipe)
+      }
+      .toolbar {
+        ToolbarItem(placement: .topBarTrailing) {
+          Button {
+            navigationRecipe = Recipe.empty
+          } label: {
+            Image(systemName: "plus")
+          }
+        }
+      }
     }
   }
 }

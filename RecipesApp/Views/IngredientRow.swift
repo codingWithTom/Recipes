@@ -33,6 +33,6 @@ struct IngredientRow: View {
 }
 
 #Preview {
-  let mixedBerries = Ingredient(name: "Mixed berries", icon: "leaf.fill", unit: "cups", quantity: "2")
+  let mixedBerries = Ingredient(name: "Mixed berries", icon: "leaf.fill", unit: "cup", quantity: "2")
   IngredientRow(ingredient: mixedBerries)
 }
