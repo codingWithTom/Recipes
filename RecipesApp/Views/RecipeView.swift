@@ -143,9 +143,9 @@ struct RecipeView: View {
 private struct IngredientRowView: View {
   @Binding var ingredient: Ingredient
   @State private var iconName: String = "leaf"
-  @State private var wholeQuantity = 0
+  @State private var wholeQuantity = ""
   @State private var fractionQuantity = ""
-  @State private var unit: IngredientUnit = .none
+  @State private var unit = ""
   @State private var isPresentingIconPicker = false
   
   private let fractions = [
@@ -161,11 +161,11 @@ private struct IngredientRowView: View {
   var body: some View {
     VStack(alignment: .leading) {
       HStack {
-        Button {
-          withAnimation { isPresentingIconPicker.toggle() }
-        } label: {
-          Image(systemName: iconName)
-        }
+        Image(systemName: iconName)
+          .foregroundStyle(.blue)
+          .onTapGesture {
+            withAnimation { isPresentingIconPicker.toggle() }
+          }
         TextField("Ingredient name", text: $ingredient.name)
       }
       
@@ -173,32 +173,22 @@ private struct IngredientRowView: View {
         .font(.body.bold())
       
       HStack {
-        Picker("", selection: $wholeQuantity) {
-          Text("Whole Unit")
-          ForEach(0...20, id: \.self) {
-            Text("\($0)")
-              .tag($0)
-          }
-        }
-        .pickerStyle(.menu)
+        PickerTextfield(
+          placeholder: "Ingredient unit",
+          options: Array(0...20).map { "\($0)" },
+          value: $wholeQuantity)
         
-        Picker("", selection: $fractionQuantity) {
-          Text("Fractions")
-          ForEach(fractions, id: \.self) {
-            Text($0)
-              .tag($0)
-          }
-        }
-        .pickerStyle(.menu)
+        PickerTextfield(
+          placeholder: "Fractions",
+          options: fractions,
+          value: $fractionQuantity
+        )
         
-        Picker("", selection: $unit) {
-          Text("Unit")
-          ForEach(IngredientUnit.allCases, id: \.self) {
-            Text($0.description)
-              .tag($0)
-          }
-        }
-        .pickerStyle(.menu)
+        PickerTextfield(
+          placeholder: "Unit",
+          options: IngredientUnit.allCases.map { $0.description },
+          value: $unit
+        )
       }
     }
     .padding(.vertical, 4)
