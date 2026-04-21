@@ -52,7 +52,7 @@ struct RecipeStepView: View {
 }
 
 #Preview {
-  let step = Step(text: "Pour into greased ramekins and bake at 425°F for 12 minutes.", ingredients: [])
+  let step = Step(text: "Pour into greased ramekins and bake at 425°F for 12 minutes.")
   RecipeStepView(number: 1, step: step, parentIsExpanded: true)
     .padding()
 }

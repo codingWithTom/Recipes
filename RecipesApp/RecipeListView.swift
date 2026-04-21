@@ -6,12 +6,17 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct RecipeListView: View {
-  let recipes = Recipe.samples
+  @Query(sort: \Recipe.dateAdded, order: .reverse)
+  private var recipes: [Recipe]
+  @Environment(\.modelContext) private var context
+  
   @Binding var selectedRecipe: Recipe?
   let namespace: Namespace.ID
-  @State private var navigationRecipe: Recipe?
+  @State private var isPresentingNewRecipe = false
+  @State private var editingRecipe: Recipe?
 
   var body: some View {
     NavigationStack {
@@ -25,19 +30,31 @@ struct RecipeListView: View {
                     selectedRecipe = recipe
                   }
                 }
+                .contextMenu {
+                  Button("Edit", systemImage: "pencil") {
+                    editingRecipe = recipe
+                  }
+
+                  Button("Delete", systemImage: "trash", role: .destructive) {
+                    context.delete(recipe)
+                  }
+                }
             }
           }
         }
         .padding()
       }
       .navigationTitle("Recipes")
-      .sheet(item: $navigationRecipe) { recipe in
-        RecipeView(recipe: recipe)
+      .sheet(isPresented: $isPresentingNewRecipe) {
+        RecipeView(viewModel: RecipeViewModel(context: context))
+      }
+      .sheet(item: $editingRecipe) { recipe in
+        RecipeView(viewModel: .init(recipe: recipe, context: context))
       }
       .toolbar {
         ToolbarItem(placement: .topBarTrailing) {
           Button {
-            navigationRecipe = Recipe.empty
+            isPresentingNewRecipe = true
           } label: {
             Image(systemName: "plus")
           }
@@ -81,5 +98,11 @@ struct RecipeHeroCard: View {
 }
 
 #Preview {
-  RecipeListView(selectedRecipe: .constant(nil), namespace: Namespace().wrappedValue)
+  let config = ModelConfiguration(isStoredInMemoryOnly: true)
+  let container = try! ModelContainer(for: Recipe.self, configurations: config)
+  for recipe in Recipe.samples {
+    container.mainContext.insert(recipe)
+  }
+  return RecipeListView(selectedRecipe: .constant(nil), namespace: Namespace().wrappedValue)
+    .modelContainer(container)
 }

@@ -6,45 +6,57 @@
 //
 
 import Foundation
+import SwiftData
 
-enum IngredientUnit: CaseIterable, Hashable, CustomStringConvertible, Identifiable {
-  case none
-  case slices
-  case tablespoon
-  case teaspoon
-  case pinch
-  case cup
-  case ounce
-  case pound
-  case head
-  case clove
-  case sprig
+@Model
+final class Recipe {
+  var title: String
+  var subtitle: String
+  var imageName: String
+  var cookTime: Int
+  var servings: Int
+  var dateAdded: Date
   
-  var id: String { description }
-
-  var description: String {
-    switch self {
-    case .none:       ""
-    case .slices:     "slices"
-    case .tablespoon: "tbsp"
-    case .teaspoon:   "tsp"
-    case .pinch:      "pinch"
-    case .cup:        "cup"
-    case .ounce:      "oz"
-    case .pound:      "lbs"
-    case .head:       "heads"
-    case .clove:      "cloves"
-    case .sprig:      "sprigs"
-    }
+  @Relationship(deleteRule: .cascade, inverse: \Component.recipe)
+  var components: [Component]
+  
+  @Relationship(deleteRule: .cascade, inverse: \Step.recipe)
+  var steps: [Step]
+  
+  init(
+    title: String,
+    subtitle: String,
+    imageName: String,
+    cookTime: Int,
+    servings: Int,
+    components: [Component] = [],
+    steps: [Step] = []
+  ) {
+    self.title = title
+    self.subtitle = subtitle
+    self.imageName = imageName
+    self.cookTime = cookTime
+    self.servings = servings
+    self.components = components
+    self.steps = steps
+    self.dateAdded = .now
   }
 }
 
-struct Ingredient: Identifiable, Hashable {
-  let id = UUID()
+@Model
+final class Ingredient {
   var name: String
   var icon: String
   var unit: String
   var quantity: String
+  var component: Component?
+  
+  init(name: String, icon: String, unit: String, quantity: String) {
+    self.name = name
+    self.icon = icon
+    self.unit = unit
+    self.quantity = quantity
+  }
 }
 
 extension Ingredient {
@@ -53,28 +65,30 @@ extension Ingredient {
   }
 }
 
-struct Component: Identifiable, Hashable {
-  let id = UUID()
-  var title: String?
-  var ingredients: [Ingredient]
-}
-
-struct Step: Identifiable, Hashable {
-  let id = UUID()
-  var text: String
-  var ingredients: [Ingredient]
-}
-
-struct Recipe: Identifiable, Hashable {
-  let id = UUID()
+@Model
+final class Component {
   var title: String
-  var subtitle: String
-  var imageName: String
-  var cookTime: Int
-  var servings: Int
-  var components: [Component]
-  var steps: [Step]
+  var recipe: Recipe?
+  
+  @Relationship(deleteRule: .cascade, inverse: \Ingredient.component)
+  var ingredients: [Ingredient]
+  
+  init(title: String = "", ingredients: [Ingredient]) {
+    self.title = title
+    self.ingredients = ingredients
+  }
 }
+
+@Model
+final class Step {
+  var text: String
+  var recipe: Recipe?
+  
+  init(text: String) {
+    self.text = text
+  }
+}
+
 
 extension Recipe {
   static var empty: Recipe {
@@ -98,13 +112,13 @@ extension Recipe {
           cookTime: 10,
           servings: 1,
           components: [
-            Component(title: nil, ingredients: [avocado, sourdough, oliveOil, salt, redPepperFlakes])
+            Component(ingredients: [avocado, sourdough, oliveOil, salt, redPepperFlakes])
           ],
           steps: [
-            Step(text: "Toast the sourdough bread until golden and crispy.", ingredients: [sourdough]),
-            Step(text: "Cut the avocado in half, remove the pit, and mash the flesh in a bowl.", ingredients: [avocado]),
-            Step(text: "Drizzle olive oil over the toast and spread the mashed avocado on top.", ingredients: [oliveOil, avocado]),
-            Step(text: "Season with salt and red pepper flakes.", ingredients: [salt, redPepperFlakes]),
+            Step(text: "Toast the sourdough bread until golden and crispy."),
+            Step(text: "Cut the avocado in half, remove the pit, and mash the flesh in a bowl."),
+            Step(text: "Drizzle olive oil over the toast and spread the mashed avocado on top."),
+            Step(text: "Season with salt and red pepper flakes."),
           ]
         )
       }(),
@@ -125,10 +139,10 @@ extension Recipe {
             Component(title: "Dressing", ingredients: [caesarDressing])
           ],
           steps: [
-            Step(text: "Grill the chicken breast until cooked through, then slice.", ingredients: [chicken]),
-            Step(text: "Chop the romaine lettuce and place in a large bowl.", ingredients: [romaine]),
-            Step(text: "Add sliced chicken, croutons, and parmesan on top.", ingredients: [chicken, croutons, parmesan]),
-            Step(text: "Drizzle with Caesar dressing and toss to combine.", ingredients: [caesarDressing]),
+            Step(text: "Grill the chicken breast until cooked through, then slice."),
+            Step(text: "Chop the romaine lettuce and place in a large bowl."),
+            Step(text: "Add sliced chicken, croutons, and parmesan on top."),
+            Step(text: "Drizzle with Caesar dressing and toss to combine."),
           ]
         )
       }(),
@@ -149,11 +163,11 @@ extension Recipe {
             Component(title: "Sauce", ingredients: [pancetta, eggs, pecorino, blackPepper])
           ],
           steps: [
-            Step(text: "Cook spaghetti in salted boiling water until al dente.", ingredients: [spaghetti]),
-            Step(text: "Crisp the pancetta in a pan over medium heat.", ingredients: [pancetta]),
-            Step(text: "Whisk together eggs and pecorino in a bowl.", ingredients: [eggs, pecorino]),
-            Step(text: "Toss hot pasta with pancetta, then stir in the egg mixture off heat.", ingredients: [spaghetti, pancetta]),
-            Step(text: "Season generously with black pepper.", ingredients: [blackPepper]),
+            Step(text: "Cook spaghetti in salted boiling water until al dente."),
+            Step(text: "Crisp the pancetta in a pan over medium heat."),
+            Step(text: "Whisk together eggs and pecorino in a bowl."),
+            Step(text: "Toss hot pasta with pancetta, then stir in the egg mixture off heat."),
+            Step(text: "Season generously with black pepper."),
           ]
         )
       }(),
@@ -170,13 +184,13 @@ extension Recipe {
           cookTime: 30,
           servings: 2,
           components: [
-            Component(title: nil, ingredients: [darkChocolate, butter, eggs, sugar, flour])
+            Component(ingredients: [darkChocolate, butter, eggs, sugar, flour])
           ],
           steps: [
-            Step(text: "Melt the dark chocolate and butter together.", ingredients: [darkChocolate, butter]),
-            Step(text: "Whisk eggs and sugar until thick and pale.", ingredients: [eggs, sugar]),
-            Step(text: "Fold the chocolate mixture into the eggs, then gently fold in flour.", ingredients: [flour]),
-            Step(text: "Pour into greased ramekins and bake at 425°F for 12 minutes.", ingredients: []),
+            Step(text: "Melt the dark chocolate and butter together."),
+            Step(text: "Whisk eggs and sugar until thick and pale."),
+            Step(text: "Fold the chocolate mixture into the eggs, then gently fold in flour."),
+            Step(text: "Pour into greased ramekins and bake at 425°F for 12 minutes."),
           ]
         )
       }(),
@@ -197,8 +211,8 @@ extension Recipe {
             Component(title: "Toppings", ingredients: [granola, honey])
           ],
           steps: [
-            Step(text: "Blend frozen berries, acai packet, and half the banana until smooth.", ingredients: [mixedBerries, acaiPacket, banana]),
-            Step(text: "Pour into a bowl and top with granola, remaining berries, and a drizzle of honey.", ingredients: [granola, mixedBerries, honey]),
+            Step(text: "Blend frozen berries, acai packet, and half the banana until smooth."),
+            Step(text: "Pour into a bowl and top with granola, remaining berries, and a drizzle of honey."),
           ]
         )
       }(),
@@ -215,14 +229,14 @@ extension Recipe {
           cookTime: 18,
           servings: 2,
           components: [
-            Component(title: nil, ingredients: [salmon, lemon, butter, garlic, dill])
+            Component(ingredients: [salmon, lemon, butter, garlic, dill])
           ],
           steps: [
-            Step(text: "Season the salmon fillet with salt and pepper.", ingredients: [salmon]),
-            Step(text: "Sear salmon skin-side down in a hot pan for 4 minutes.", ingredients: [salmon]),
-            Step(text: "Flip and cook for another 3 minutes.", ingredients: []),
-            Step(text: "Melt butter with garlic and lemon juice, then pour over the salmon.", ingredients: [butter, garlic, lemon]),
-            Step(text: "Garnish with fresh dill.", ingredients: [dill]),
+            Step(text: "Season the salmon fillet with salt and pepper."),
+            Step(text: "Sear salmon skin-side down in a hot pan for 4 minutes."),
+            Step(text: "Flip and cook for another 3 minutes."),
+            Step(text: "Melt butter with garlic and lemon juice, then pour over the salmon."),
+            Step(text: "Garnish with fresh dill."),
           ]
         )
       }(),

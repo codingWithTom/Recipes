@@ -83,8 +83,8 @@ struct RecipeDetailView: View {
 
       VStack(alignment: .leading, spacing: 8) {
         ForEach(recipe.components) { component in
-          if let title = component.title {
-            Text(title)
+          if !component.title.isEmpty {
+            Text(component.title)
               .font(.title3.italic())
           }
 
