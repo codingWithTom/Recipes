@@ -12,7 +12,7 @@ struct IngredientRow: View {
   
   var body: some View {
     HStack(spacing: 16) {
-      Image(systemName: ingredient.icon)
+      Image(systemName: ingredient.icon.isEmpty ? "leaf" : ingredient.icon)
         .font(.body)
         .frame(width: 36, height: 36)
         .background(.ultraThinMaterial)

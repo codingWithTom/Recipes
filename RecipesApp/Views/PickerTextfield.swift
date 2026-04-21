@@ -66,7 +66,6 @@ struct PickerTextfield: View {
       }
     }
     .onChange(of: isTextFieldFocused) { oldFocus, newFocus in
-      print("FOCUS CHANGED to \(newFocus)")
       if !newFocus && customText.isEmpty {
         resetToPicker()
       }
