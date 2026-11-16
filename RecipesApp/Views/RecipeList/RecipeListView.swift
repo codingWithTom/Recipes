@@ -46,10 +46,10 @@ struct RecipeListView: View {
       }
       .navigationTitle("Recipes")
       .sheet(isPresented: $isPresentingNewRecipe) {
-        RecipeView(viewModel: RecipeViewModel(context: context))
+        EditRecipeView(viewModel: RecipeViewModel(context: context))
       }
       .sheet(item: $editingRecipe) { recipe in
-        RecipeView(viewModel: .init(recipe: recipe, context: context))
+        EditRecipeView(viewModel: .init(recipe: recipe, context: context))
       }
       .toolbar {
         ToolbarItem(placement: .topBarTrailing) {
@@ -75,25 +75,38 @@ struct RecipeHeroCard: View {
         .matchedGeometryEffect(id: "card-\(recipe.id)", in: namespace)
         .frame(height: 280)
         .overlay(alignment: .center) {
-          Image(systemName: recipe.imageName)
-            .font(.system(size: 80))
+          RecipeImage(recipe: recipe, fontSize: 80, cornerRadius: 24)
             .matchedGeometryEffect(id: "icon-\(recipe.id)", in: namespace)
-            .foregroundStyle(.secondary)
-          
         }
       
       VStack(alignment: .leading, spacing: 4) {
         Text(recipe.title)
           .font(.title2.bold())
           .matchedGeometryEffect(id: "title-\(recipe.id)", in: namespace)
+          .foregroundStyle(.white)
         Text(recipe.subtitle)
           .font(.subheadline)
-          .foregroundStyle(.secondary)
+          .foregroundStyle(.white.opacity(0.85))
           .matchedGeometryEffect(id: "subtitle-\(recipe.id)", in: namespace)
       }
+      .frame(maxWidth: .infinity, alignment: .leading)
       .padding(20)
+      .background(
+        LinearGradient(
+          colors: [.clear, .black.opacity(0.6)],
+          startPoint: .top,
+          endPoint: .bottom
+        )
+      )
+      .clipShape(
+        UnevenRoundedRectangle(
+          topLeadingRadius: 0,
+          bottomLeadingRadius: 24,
+          bottomTrailingRadius: 24,
+          topTrailingRadius: 0
+        )
+      )
     }
-    .glassEffect(.regular)
   }
 }
 

@@ -36,22 +36,37 @@ struct RecipeDetailView: View {
         .matchedGeometryEffect(id: "card-\(recipe.id)", in: namespace, isSource: false)
         .frame(height: 360)
         .overlay(alignment: .center) {
-          Image(systemName: recipe.imageName)
-            .font(.system(size: 100))
+          RecipeImage(recipe: recipe, fontSize: 100, cornerRadius: 24)
             .matchedGeometryEffect(id: "icon-\(recipe.id)", in: namespace, isSource: false)
-            .foregroundStyle(.secondary)
         }
 
       VStack(alignment: .leading, spacing: 4) {
         Text(recipe.title)
           .font(.title.bold())
           .matchedGeometryEffect(id: "title-\(recipe.id)", in: namespace, isSource: false)
+          .foregroundStyle(.white)
         Text(recipe.subtitle)
           .font(.subheadline)
-          .foregroundStyle(.secondary)
+          .foregroundStyle(.white.opacity(0.85))
           .matchedGeometryEffect(id: "subtitle-\(recipe.id)", in: namespace, isSource: false)
       }
+      .frame(maxWidth: .infinity, alignment: .leading)
       .padding(24)
+      .background(
+        LinearGradient(
+          colors: [.clear, .black.opacity(0.6)],
+          startPoint: .top,
+          endPoint: .bottom
+        )
+      )
+      .clipShape(
+        UnevenRoundedRectangle(
+          topLeadingRadius: 0,
+          bottomLeadingRadius: 24,
+          bottomTrailingRadius: 24,
+          topTrailingRadius: 0
+        )
+      )
     }
     .padding(.bottom)
   }

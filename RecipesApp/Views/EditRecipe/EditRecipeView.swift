@@ -1,5 +1,5 @@
 //
-//  RecipeView.swift
+//  EditRecipeView.swift
 //  RecipesApp
 //
 //  Created by Tomas Trujillo on 2026-04-06.
@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import PhotosUI
 
 private enum FocusFields: Hashable {
   case title
@@ -16,18 +17,19 @@ private enum FocusFields: Hashable {
   case step(Int)
 }
 
-struct RecipeView: View {
+struct EditRecipeView: View {
   @Environment(\.dismiss) private var dismiss
   @State private var viewModel: RecipeViewModel
   @FocusState private var focusedField: FocusFields?
-
+  
   init(viewModel: RecipeViewModel) {
     _viewModel = State(initialValue: viewModel)
   }
-
+  
   var body: some View {
     NavigationStack {
       Form {
+        imageSection
         detailsSection
         cookingInfoSection
         ingredientsSection
@@ -76,11 +78,41 @@ struct RecipeView: View {
     switch viewModel.mode {
     case .creating:
       "New Recipe"
+    case .importing:
+      "Imported Recipe"
     case .editing(let recipe):
       recipe.title
     }
   }
-
+  
+  @State private var item: PhotosPickerItem?
+  
+  private var imageSection: some View {
+    Section("Image") {
+      if let data = viewModel.imageData,
+         let image = UIImage(data: data) {
+        Image(uiImage: image)
+          .resizable()
+          .scaledToFit()
+      }
+      PhotosPicker("Add an Image", selection: $item, matching: .images)
+      
+      Button("Remove Image", role: .destructive) {
+        viewModel.removeImage()
+      }
+    }
+    .onChange(of: item) {
+      Task {
+        guard
+          let data = try? await item?.loadTransferable(type: Data.self)
+        else {
+          return
+        }
+        viewModel.onImageUpdated(data: data)
+      }
+    }
+  }
+  
   private var detailsSection: some View {
     Section("Details") {
       TextField("Title", text: $viewModel.title)
@@ -92,7 +124,7 @@ struct RecipeView: View {
         .focused($focusedField, equals: .subtitle)
     }
   }
-
+  
   private var cookingInfoSection: some View {
     Section("Cooking Info") {
       Stepper(
@@ -108,7 +140,7 @@ struct RecipeView: View {
       )
     }
   }
-
+  
   private var ingredientsSection: some View {
     ForEach(viewModel.components.indices, id: \.self) { componentIndex in
       @Bindable var component = viewModel.components[componentIndex]
@@ -174,7 +206,7 @@ struct RecipeView: View {
       .onMove { from, to in
         viewModel.steps.move(fromOffsets: from, toOffset: to)
       }
-
+      
       Button("Add Step") {
         viewModel.steps.append(.init(text: ""))
       }
@@ -187,6 +219,6 @@ struct RecipeView: View {
   let container = try! ModelContainer(for: Recipe.self, configurations: config)
   let recipe = Recipe.samples[0]
   container.mainContext.insert(recipe)
-  return RecipeView(viewModel: RecipeViewModel(recipe: recipe, context: container.mainContext))
+  return EditRecipeView(viewModel: RecipeViewModel(recipe: recipe, context: container.mainContext))
     .modelContainer(container)
 }
