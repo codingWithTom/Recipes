@@ -13,20 +13,22 @@ final class Recipe {
   var title: String
   var subtitle: String
   var imageName: String
+  @Attribute(.externalStorage) var imageData: Data?
   var cookTime: Int
   var servings: Int
   var dateAdded: Date
-  
+
   @Relationship(deleteRule: .cascade, inverse: \Component.recipe)
   var components: [Component]
-  
+
   @Relationship(deleteRule: .cascade, inverse: \Step.recipe)
   var steps: [Step]
-  
+
   init(
     title: String,
     subtitle: String,
     imageName: String,
+    imageData: Data? = nil,
     cookTime: Int,
     servings: Int,
     components: [Component] = [],
@@ -35,6 +37,7 @@ final class Recipe {
     self.title = title
     self.subtitle = subtitle
     self.imageName = imageName
+    self.imageData = imageData
     self.cookTime = cookTime
     self.servings = servings
     self.components = components
